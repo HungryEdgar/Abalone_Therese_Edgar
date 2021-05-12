@@ -1,3 +1,6 @@
+Thérèse Ntabuhashe 195320
+Antunes Edgar 195123
+
 
 "Au sens étroit, plus fréquent, une heuristique est une méthode de calcul qui fournit 
 	rapidement une solution réalisable, pas nécessairement optimale ou exacte, pour un problème d'optimisation difficile. "
