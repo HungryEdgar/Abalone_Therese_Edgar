@@ -22,9 +22,9 @@ class client():
         while True:
             try :
                 client, addr = self._s.accept()
-                
+                req = receiveJSON(3000)
                 ## Si on rençoit un ping, on renvoie un pong ##
-                while receiveJSON(3000) == {"request": "ping"}:
+                if req["request"] == "ping":
                     sendJSON(self._s,{"response": "pong"})
                 
                 ## Pour les requêtes de jeux: ##
