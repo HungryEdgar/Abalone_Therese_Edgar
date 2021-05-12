@@ -1,49 +1,111 @@
 import socket
 from jsonNetwork import sendJSON, receiveJSON
 
-class IAClient():
-    def __init__(self, host = socket.gethostname(), port=3000):
-        s_client = socket.socket()
-        #Accroche le client à une adresse spécifique
-        s_client.bind(('localhost',0000))
-        self._s= s_client
-        #On se connecte au serveur et on envoir une requête
-        self._s.connect(('localhost', 3000))
-        registration = {
+'''
+    On crée un socket client qui va essayer de se connecter au seveur 
+    (modèle sensé petre statique, il doit donc être en dehors de la class)
+'''
+
+
+def client_s():
+    s_client = socket.socket()
+    s_client.connect(('localhost', 3000))
+    return s_client
+
+
+def move(move_played, received, ia):
+    my_move = {
+        "response": "move",
+        "move": move_played,
+        "message": "Fun message"
+    }
+    sendJSON(ia, my_move)
+
+
+class IAClient:
+    def __init__(self, host=socket.gethostname(), port=9000):
+        self._s = None
+        self._host = host
+        self._port = port
+
+    '''
+        Pour lancer le programme
+    '''
+
+    def run(self):
+        self.subscribe()
+
+    '''
+        Pour se connecter au serveur.
+    '''
+
+    def subscribe(self):
+        ia_socket = client_s()
+        try:
+            '''
+                On lance l'inscription et on attend la réponse
+            '''
+            registration = {
                 "request": "subscribe",
-                "port": 0000,
+                "port": self._port,
                 "name": "Hungry Team",
                 "matricules": ["195320", "195123"]
-        }
-        sendJSON(self._s,registration)
-        ## On accepte 1 client à la fois. Donc on les met en attente tant qu'un autre est traiter. ##
-        ## On commence par écouter ce qu'il se passe. Puis on attend de recevoir une réponse du serveur. ##
-        self._s.listen()
-        while True:
-            try :
-                client, addr = self._s.accept()
-                server_request = receiveJSON(3000)
-                ## Si on rençoit un ping, on renvoie un pong ##
-                if server_request["request"] == "ping":
-                    sendJSON(self._s,{"response": "pong"})
-                
-                ## Pour les requêtes de jeux: ##
-                elif server_request["request"] == play:
-                    ## Si la fonction minimax nous dit qu'on a une grande probabilité de gagner, on joue. ##
-                    my_moves={
-                        "response": "move",
-                        "move": {
-                             "marbles": [[1, 1], [2, 2]],
-                             "direction": "SE"
-                             },
-                        "message": "Fun message"
-                    }
-                    ## Si la fonction minimax nous dit qu'on a pas aucune chance de gagner cette partie. ##
-                    ## on abandonne ##
-                    giveup = {"response": "giveup",}
-            ## Ajouter un laps de temps de 3 secondes pour la réponse ##
-            except OSError:
-                print("Connexion impossible")
+            }
+            sendJSON(ia_socket, registration)
+            message = receiveJSON(ia_socket)
+            if message["response"] == "ok":
+                self.listen(self._host)
+                self.accept()
+            else:
+                print('Error')
 
-if __name__== "__main__":
-    IAClient().run()     
+        except OSError:
+            print('Connexion avec le serveur non établie')
+
+    '''
+        Pour écouter sur un certain port
+    '''
+
+    def listen(self,host):
+        self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._s.bind(('localhost', self._port))
+        self._s.listen(5)
+        '''backlog of size 5'''
+        print('Listening on port {}'.format(self._port))
+
+    '''
+        Pour attendre que les clients se connecte et les accepter
+    '''
+
+    def accept(self):
+        print('Waiting for client to connect...')
+        while True:
+            ia, addr = self._s.accept()
+            try:
+                message = receiveJSON(ia)
+                print('Receiving message from {}'.format(addr))
+                self.request(ia, message)
+            except Exception as e:
+                pass
+
+    '''
+        Pour les requêtes reçu par le serveur
+    '''
+
+    def request(self, ia, message):
+
+        if message["request"] == "ping":
+            sendJSON(self._s, {"response": "pong"})
+
+        if message["request"] == "play":
+            print('Play')
+
+    '''
+        Pour commencer à jouer
+    '''
+
+    def play(self, ia):
+        print('play')
+
+if __name__ == "__main__":
+    IAClient().run()
