@@ -22,23 +22,20 @@ class client():
         while True:
             try :
                 client, addr = self._s.accept()
-                req = receiveJSON(3000)
+                server_request = receiveJSON(3000)
                 ## Si on rençoit un ping, on renvoie un pong ##
-                if req["request"] == "ping":
+                if server_request["request"] == "ping":
                     sendJSON(self._s,{"response": "pong"})
                 
                 ## Pour les requêtes de jeux: ##
-                game_state = {
-                    "request": "play",
-                    "lives": 3,
-                    "errors": list_of_errors,
-                    "state": state_of_the_game
-                    }   
-                while receiveJSON(3000) == game_state:
+                elif server_request["request"] == play:
                     ## Si la fonction minimax nous dit qu'on a une grande probabilité de gagner, on joue. ##
                     my_moves={
                         "response": "move",
-                        "move": the_move_played,
+                        "move": {
+                             "marbles": [[1, 1], [2, 2]],
+                             "direction": "SE"
+                             },
                         "message": "Fun message"
                     }
                     ## Si la fonction minimax nous dit qu'on a pas aucune chance de gagner cette partie. ##
@@ -46,7 +43,7 @@ class client():
                     giveup = {"response": "giveup",}
             ## Ajouter un laps de temps de 3 secondes pour la réponse ##
             except OSError:
-                print()
+                print("Connexion impossible")
 
 if __name__== "__main__":
     client().run()     
