@@ -1,7 +1,7 @@
 import socket
 from jsonNetwork import sendJSON, receiveJSON
 
-class client():
+class IAClient():
     def __init__(self, host = socket.gethostname(), port=3000):
         s_client = socket.socket()
         #Accroche le client à une adresse spécifique
@@ -46,4 +46,4 @@ class client():
                 print("Connexion impossible")
 
 if __name__== "__main__":
-    client().run()     
+    IAClient().run()     
