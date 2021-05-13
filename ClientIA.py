@@ -12,7 +12,6 @@ def client_s():
     s_client.connect(('localhost', 3000))
     return s_client
 
-
 '''
     Pour pouvoir envoyer le mouvement qu'on veut effectuer
 '''
@@ -94,22 +93,15 @@ class IAClient:
             try:
                 message = receiveJSON(ia)
                 print('Receiving message from {}'.format(addr))
-                self.request(ia, message)
-            except Exception as e:
+                if message["request"] == "ping":
+                    sendJSON(ia, {"response": "pong"})
+
+                if message["request"] == "play":
+                    print(message["request"])
+                    self.play(ia, message)
+
+            except OSError:
                 pass
-
-    '''
-        Pour les requêtes reçu par le serveur
-    '''
-
-    def request(self, ia, message):
-
-        if message["request"] == "ping":
-            sendJSON(self._s, {"response": "pong"})
-            print('answer pong')
-
-        if message["request"] == "play":
-            self.play(ia, message)
 
     '''
         On commence à jouer en mettant en place notre starégie
@@ -124,14 +116,18 @@ class IAClient:
 
         current = message["current"]
         board = state["board"]
+        print(board)
+        print(lives)
 
         '''
             Si le current est 0, on commence et on a les pions 'B' et inversement
         '''
         if current == 0:
-            black_strategy(board ,state)
+            #black_strategy(board ,state)
+            print('black')
         else:
-            white_strategy(board ,state)
+            #white_strategy(board ,state)
+            print('white')
 
     '''
         Si on décide d'abandonner
@@ -143,4 +139,3 @@ class IAClient:
 
 if __name__ == "__main__":
     IAClient().run()
-
