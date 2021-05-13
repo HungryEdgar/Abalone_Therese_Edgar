@@ -1,129 +1,88 @@
+from jsonNetwork import receiveJSON,sendJSON
+class Strategy:
 
-def black_strategy(board,state):
-    my_pos = []
-    adv_pos = []
-    line = 0
-    col = 0
-    for line in range(len(board)):
-        for col in range(len(board[0])):
-            if board[line][col] == "B":
-                my_pos.append([line, col])
-            if board[line][col] == "W":
-                adv_pos.append([line, col])
-            col += 1
-        line += 1
-    print(my_pos)
+    def __init__(self, black: bool = True):
+        self._board = None
+        self._type: bool = black
+        self._me = 'B' if black else 'W'
+        self._adversary = 'W' if not black else 'B'
+
+    '''
+        On choisit quel move on veut réaliser
+    '''
+
+    def move(self, board):
+        self._board = board
+        moves = self.get_moves()
+        print(moves)
+        # TODO Choose which move you have to perform
+
+    '''
+        On met les moves possible dans une liste en fonction de l'état du jeux
+    '''
+
+    def get_moves(self):
+        moves = {
+            "NE": [],
+            "NW": [],
+            "E": [],
+            "W": [],
+            "SW": [],
+            "SE": [],
+        }
+        for ln, line in enumerate(self._board):
+            for col, el in enumerate(line):
+                if el != self._me:
+                    continue
+                possible_moves = self.possible_moves(ln, col)
+                if possible_moves:
+                    for key, value in possible_moves.items():
+                        moves[key] += value
+
+        return moves
+
+    '''
+        Pour avoir les moves possibles
+    '''
+
+    def possible_moves(self, line, col):
+        possible_moves = {}
+        if self.position_empty(line, col-1):
+            possible_moves['W'] = [[line, col]]
+        if self.position_empty(line-1, col-1):
+            possible_moves['NW'] = [[line-1, col]]
+        if self.position_empty(line+1, col):
+            possible_moves['SW'] = [[line, col]]
+        if self.position_empty(line, col+1):
+            possible_moves['E'] = [[line, col]]
+        if self.position_empty(line-1, col):
+            possible_moves['NE'] = [[line, col]]
+        if self.position_empty(line+1, col+1):
+            possible_moves['SE'] = [[line, col]]
+        return possible_moves
+
+    '''
+        Pour avoir les positions vides
+    '''
+
+    def position_empty(self, line, col):
+        if line < 0 or line >= len(self._board):
+            return False
+        if col < 0 or col >= len(self._board[line]):
+            return False
+        return self._board[line][col] == 'E'
 
 
-def white_strategy(board,state):
-    my_pos = []
-    adv_pos = []
-    line = 0
-    col = 0
-    for line in range(len(board)):
-        for col in range(len(board[0])):
-            if board[line][col] == "W":
-                my_pos.append([line, col])
-            if board[line][col] == "B":
-                adv_pos.append([line, col])
-            col += 1
-        line += 1
-    print(my_pos)
-    if state["board"][3][3] == 'E':
-        move = {
-            "marbles": [[0, 0], [1, 1], [2, 2]],
-            "direction": "SE"
-        }
-
-    if state["board"][3][4] == 'E':
-        move = {
-            "marbles": [[0, 1], [1, 2], [2, 3]],
-            "direction": "SE"
-        }
-
-    if state["board"][3][5] == 'E':
-        move = {
-            "marbles": [[0, 2], [1, 3], [2, 4]],
-            "direction": "SE"
-        }
-    # on répète cette opération
-    if state["board"][4][4] == 'E' and state["board"][3][3] == 'W':
-        move = {
-            "marbles": [[1, 1], [2, 2], [3, 3]],
-            "direction": "SE"
-        }
-
-    if state["board"][4][5] == 'E' and state["board"][3][4] == 'W':
-        move = {
-            "marbles": [[1, 2], [2, 3], [3, 4]],
-            "direction": "SE"
-        }
-
-    if state["board"][4][6] == 'E' and state["board"][3][5] == 'W':
-        move = {
-            "marbles": [[1, 3], [2, 4], [2, 5]],
-            "direction": "SE"
-        }
-
-    # là on est déjà au 10eme tour
-    if state["board"][4][4] == 'W' and state["board"][3][3] == 'W' and state["board"][2][2] == 'W' and \
-            state["board"][5][5] == 'B' and state["board"][6][6] == 'E':
-        move = {
-            "marbles": [[2, 2], [3, 3], [4, 4]],  # pions blancs
-            "direction": "SE"
-        }
-        move = {
-            "marbles": [[5, 5]],  # pions noirs
-            "direction": "SE"
-        }
-
-    if state["board"][4][4] == 'W' and state["board"][3][3] == 'W' and state["board"][2][2] == 'W' and \
-            state["board"][5][5] == 'B' and state["board"][6][6] == 'B':
-        move = {
-            "marbles": [[2, 2], [3, 3], [4, 4]],  # pions blancs
-            "direction": "SE"
-        }
-        move = {
-            "marbles": [[5, 5], [6, 6]],  # pions noirs
-            "direction": "SE"
-        }
-    if state["board"][2][3] == 'W' and state["board"][3][4] == 'W' and state["board"][4][5] == 'W' and \
-            state["board"][5][6] == 'B' and state["board"][6][7] == 'E':
-        move = {
-            "marbles": [[2, 3], [3, 4], [4, 5]],  # pions blancs
-            "direction": "SE"
-        }
-        move = {
-            "marbles": [[5, 6]],  # pions noirs
-            "direction": "SE"
-        }
-    if state["board"][2][3] == 'W' and state["board"][3][4] == 'W' and state["board"][4][5] == 'W' and \
-            state["board"][5][6] == 'B' and state["board"][6][7] == 'B':
-        move = {
-            "marbles": [[2, 3], [3, 4], [4, 5]],  # pions blancs
-            "direction": "SE"
-        }
-        move = {
-            "marbles": [[5, 6], [6, 7]],  # pions noirs
-            "direction": "SE"
-        }
-    if state["board"][2][4] == 'W' and state["board"][3][5] == 'W' and state["board"][4][6] == 'W' and \
-            state["board"][5][7] == 'B' and state["board"][6][8] == 'E':
-        move = {
-            "marbles": [[2, 4], [3, 5], [4, 6]],  # pions blancs
-            "direction": "SE"
-        }
-        move = {
-            "marbles": [[5, 7]],  # pions noirs
-            "direction": "SE"
-        }
-    if state["board"][2][4] == 'W' and state["board"][3][5] == 'W' and state["board"][4][6] == 'W' and \
-            state["board"][5][7] == 'B' and state["board"][6][8] == 'B':
-        move = {
-            "marbles": [[2, 4], [3, 5], [4, 6]],  # pions blancs
-            "direction": "SE"
-        }
-        move = {
-            "marbles": [[5, 7][6, 8]],  # pions noirs
-            "direction": "SE"
-        }
+if __name__ == "__main__":
+    strategy = Strategy()
+    strategy.move([
+      ["W", "W", "W", "W", "W", "X", "X", "X", "X"],
+      ["W", "W", "W", "W", "W", "W", "X", "X", "X"],
+      ["E", "E", "W", "W", "W", "E", "E", "X", "X"],
+      ["E", "E", "E", "E", "E", "E", "E", "E", "X"],
+      ["E", "E", "E", "E", "E", "E", "E", "E", "E"],
+      ["X", "E", "E", "E", "E", "E", "E", "E", "E"],
+      ["X", "X", "E", "E", "B", "B", "B", "E", "E"],
+      ["X", "X", "X", "B", "B", "B", "B", "B", "B"],
+      ["X", "X", "X", "X", "B", "B", "B", "B", "B"]
+   ])
