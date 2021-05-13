@@ -13,13 +13,55 @@ def client_s():
     return s_client
 
 
-def move(move_played, received, ia):
+'''
+    Pour pouvoir envoyer le mouvement qu'on veut effectuer
+'''
+
+
+def move(move_played, ia):
     my_move = {
         "response": "move",
         "move": move_played,
         "message": "Fun message"
     }
     sendJSON(ia, my_move)
+
+
+'''
+    Statégie en fonction des poins qu'on a
+'''
+
+
+def black_strategy(board):
+    my_pos = []
+    adv_pos = []
+    line = 0
+    col = 0
+    for line in range(len(board)):
+        for col in range(len(board[0])):
+            if board[line][col] == "B":
+                my_pos.append([line, col])
+            if board[line][col] == "W":
+                adv_pos.append([line, col])
+            col += 1
+        line += 1
+    print(my_pos)
+
+
+def white_strategy(board):
+    my_pos = []
+    adv_pos = []
+    line = 0
+    col = 0
+    for line in range(len(board)):
+        for col in range(len(board[0])):
+            if board[line][col] == "W":
+                my_pos.append([line, col])
+            if board[line][col] == "B":
+                adv_pos.append([line, col])
+            col += 1
+        line += 1
+    print(my_pos)
 
 
 class IAClient:
@@ -66,7 +108,7 @@ class IAClient:
         Pour écouter sur un certain port
     '''
 
-    def listen(self,host):
+    def listen(self, host):
         self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._s.bind(('localhost', self._port))
         self._s.listen(5)
@@ -96,16 +138,41 @@ class IAClient:
 
         if message["request"] == "ping":
             sendJSON(self._s, {"response": "pong"})
+            print('answer pong')
 
         if message["request"] == "play":
-            print('Play')
+            self.play(ia, message)
 
     '''
-        Pour commencer à jouer
+        On commence à jouer en mettant en place notre starégie
     '''
 
-    def play(self, ia):
-        print('play')
+    def play(self, ia, message):
+        '''
+            On commence par récupérer les informations envoyer sur l'état du jeu
+        '''
+        state = message["state"]
+        lives = message["lives"]
+
+        current = message["current"]
+        board = state["board"]
+
+        '''
+            Si le current est 0, on commence et on a les pions 'B' et inversement
+        '''
+        if current == 0:
+            black_strategy(board)
+        else:
+            white_strategy(board)
+
+    '''
+        Si on décide d'abandonner
+    '''
+
+    def give_up(self):
+        sendJSON(self._s,{"response": "giveup",})
+
 
 if __name__ == "__main__":
     IAClient().run()
+
