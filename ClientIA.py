@@ -1,6 +1,6 @@
 import socket
 from jsonNetwork import sendJSON, receiveJSON
-
+from Strategy import black_strategy, white_strategy
 '''
     On crée un socket client qui va essayer de se connecter au seveur 
     (modèle sensé petre statique, il doit donc être en dehors de la class)
@@ -30,38 +30,6 @@ def move(move_played, ia):
 '''
     Statégie en fonction des poins qu'on a
 '''
-
-
-def black_strategy(board):
-    my_pos = []
-    adv_pos = []
-    line = 0
-    col = 0
-    for line in range(len(board)):
-        for col in range(len(board[0])):
-            if board[line][col] == "B":
-                my_pos.append([line, col])
-            if board[line][col] == "W":
-                adv_pos.append([line, col])
-            col += 1
-        line += 1
-    print(my_pos)
-
-
-def white_strategy(board):
-    my_pos = []
-    adv_pos = []
-    line = 0
-    col = 0
-    for line in range(len(board)):
-        for col in range(len(board[0])):
-            if board[line][col] == "W":
-                my_pos.append([line, col])
-            if board[line][col] == "B":
-                adv_pos.append([line, col])
-            col += 1
-        line += 1
-    print(my_pos)
 
 
 class IAClient:
@@ -161,9 +129,9 @@ class IAClient:
             Si le current est 0, on commence et on a les pions 'B' et inversement
         '''
         if current == 0:
-            black_strategy(board)
+            black_strategy(board ,state)
         else:
-            white_strategy(board)
+            white_strategy(board ,state)
 
     '''
         Si on décide d'abandonner
