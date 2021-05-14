@@ -1,6 +1,6 @@
 import socket
 from jsonNetwork import sendJSON, receiveJSON
-from Strategy import black_strategy, white_strategy
+
 '''
     On crée un socket client qui va essayer de se connecter au seveur 
     (modèle sensé petre statique, il doit donc être en dehors de la class)
@@ -12,22 +12,9 @@ def client_s():
     s_client.connect(('localhost', 3000))
     return s_client
 
+
 '''
     Pour pouvoir envoyer le mouvement qu'on veut effectuer
-'''
-
-
-def move(move_played, ia):
-    my_move = {
-        "response": "move",
-        "move": move_played,
-        "message": "Fun message"
-    }
-    sendJSON(ia, my_move)
-
-
-'''
-    Statégie en fonction des poins qu'on a
 '''
 
 
@@ -36,6 +23,7 @@ class IAClient:
         self._s = None
         self._host = host
         self._port = port
+        self._board = None
 
     '''
         Pour lancer le programme
@@ -57,7 +45,7 @@ class IAClient:
             registration = {
                 "request": "subscribe",
                 "port": self._port,
-                "name": "Hungry Team",
+                "name": "Hungry ",
                 "matricules": ["195320", "195123"]
             }
             sendJSON(ia_socket, registration)
@@ -83,7 +71,7 @@ class IAClient:
         print('Listening on port {}'.format(self._port))
 
     '''
-        Pour attendre que les clients se connecte et les accepter
+        Pour attendre que les clients se connecte 
     '''
 
     def accept(self):
@@ -93,48 +81,209 @@ class IAClient:
             try:
                 message = receiveJSON(ia)
                 print('Receiving message from {}'.format(addr))
-                if message["request"] == "ping":
-                    sendJSON(ia, {"response": "pong"})
-
-                if message["request"] == "play":
-                    print(message["request"])
-                    self.play(ia, message)
+                self.request(ia, message)
 
             except OSError:
                 pass
 
     '''
-        On commence à jouer en mettant en place notre starégie
+        Pour les requêtes faites au serveur
     '''
 
-    def play(self, ia, message):
-        '''
-            On commence par récupérer les informations envoyer sur l'état du jeu
-        '''
-        state = message["state"]
-        lives = message["lives"]
+    def request(self, ia, message):
+        if message["request"] == "ping":
+            sendJSON(ia, {"response": "pong"})
 
-        current = message["current"]
-        board = state["board"]
-        print(board)
-        print(lives)
+        if message["request"] == "play":
+            print(message["request"])
+            state = message['state']
+            board = state['board']
+            current = state['current']
+            if current == 0:
+                self.move_black(ia, board)
+            else:
+                self.move_white(ia, board)
 
+    '''
+        Pour commencer à jouer et récupéré l'état du jeux, j'appelle la class IAStrategy
+    '''
+
+    def play(self, marble, direction, ia):
+        the_move_played = {
+            "marbles": marble,
+            "direction": direction,
+        }
+        my_move = {
+            "response": "move",
+            "move": the_move_played,
+            "message": "Pions, attaque tonnerre"
+        }
+        sendJSON(ia, my_move)
+
+    '''
+            On choisit quel move on veut réaliser
         '''
-            Si le current est 0, on commence et on a les pions 'B' et inversement
-        '''
-        if current == 0:
-            #black_strategy(board ,state)
-            print('black')
+
+    def move_black(self, ia, board):
+        self._board = board
+        moves = self.get_moves_black()
+
+        print(moves)
+        score = {
+            'NE': len(moves['NE']),
+            'NW': len(moves['NW']),
+            'E': len(moves['E']),
+            'W': len(moves['W']),
+            'SW': len(moves['SW']),
+            'SE': len(moves['SE'])}
+
+        print(score.values())
+        v = list(score.values())
+        k = list(score.keys())
+
+        direction = k[v.index(max(v))]
+        marbles = moves[str(direction)]
+        self.move(marbles, direction,ia)
+
+    def move_white(self, ia, board):
+        self._board = board
+        moves = self.get_moves_white()
+
+        print(moves)
+        score = {
+            'SE': len(moves['SE']),
+            'SW': len(moves['SW']),
+            'W': len(moves['W']),
+            'E': len(moves['E']),
+            'NW': len(moves['NW']),
+            'NE': len(moves['NE'])}
+
+        print(score.values())
+
+        v = list(score.values())
+        k = list(score.keys())
+
+        direction = k[v.index(max(v))]
+        marbles = moves[str(direction)]
+
+        self.move(marbles, direction, ia)
+
+    '''
+        On renvoie le mouvement qu'on envera par la suite
+    '''
+
+    def move(self, marbles, direction, ia):
+        # Je cherche les poins avec ayant la même ligne et ou la même colone
+
+        same_line = []
+        same_col = []
+        for jj in range(len(marbles) - 1):
+            if marbles[jj][0] == marbles[jj + 1][0]:
+                same_line.append(marbles[jj + 1])
+            if marbles[jj][1] == marbles[jj + 1][1]:
+                same_col.append(marbles[jj])
+            jj += 1
+
+        # Je regarde si si sont l'un a coté de l'autre ou pas
+
+        line_aligned = []
+        col_aligned = []
+        cc = 0
+        ll = 0
+        for ll in range(len(same_line) - 1):
+            if same_line[ll][1] == same_line[ll + 1][1]:
+                line_aligned.append(marbles[ll])
+            ll += 1
+        for cc in range(len(same_col) - 1):
+            if marbles[cc][0] == marbles[cc + 1][0]:
+                col_aligned.append(same_col[cc])
+            cc += 1
+
+        if len(line_aligned) > len(col_aligned):
+            my_marbles = line_aligned
         else:
-            #white_strategy(board ,state)
-            print('white')
+            my_marbles = col_aligned
+
+        print(my_marbles)
+        while len(my_marbles) > 3:
+            del my_marbles[len(my_marbles) - 1]
+
+        self.play(my_marbles, direction, ia)
 
     '''
-        Si on décide d'abandonner
+        On met les moves possible dans une liste en fonction de l'état du jeux
     '''
 
-    def give_up(self):
-        sendJSON(self._s,{"response": "giveup",})
+    def get_moves_black(self):
+        moves = {
+            "NE": [],
+            "NW": [],
+            "E": [],
+            "W": [],
+            "SW": [],
+            "SE": [],
+        }
+        for ln, line in enumerate(self._board):
+            for col, el in enumerate(line):
+                if el != 'B':
+                    continue
+                possible_moves = self.possible_moves(ln, col)
+                if possible_moves:
+                    for key, value in possible_moves.items():
+                        moves[key] += value
+
+        return moves
+
+    def get_moves_white(self):
+        moves = {
+            "NE": [],
+            "NW": [],
+            "E": [],
+            "W": [],
+            "SW": [],
+            "SE": [],
+        }
+        for ln, line in enumerate(self._board):
+            for col, el in enumerate(line):
+                if el != 'W':
+                    continue
+                possible_moves = self.possible_moves(ln, col)
+                if possible_moves:
+                    for key, value in possible_moves.items():
+                        moves[key] += value
+
+        return moves
+
+    '''
+        Pour avoir les moves possibles
+    '''
+
+    def possible_moves(self, line, col):
+        possible_moves = {}
+        if self.position_empty(line, col - 1):
+            possible_moves['W'] = [[line, col]]
+        if self.position_empty(line - 1, col - 1):
+            possible_moves['NW'] = [[line - 1, col]]
+        if self.position_empty(line + 1, col):
+            possible_moves['SW'] = [[line, col]]
+        if self.position_empty(line, col + 1):
+            possible_moves['E'] = [[line, col]]
+        if self.position_empty(line - 1, col):
+            possible_moves['NE'] = [[line, col]]
+        if self.position_empty(line + 1, col + 1):
+            possible_moves['SE'] = [[line, col]]
+        return possible_moves
+
+    '''
+        Pour avoir les positions vides
+    '''
+
+    def position_empty(self, line, col):
+        if line < 0 or line >= len(self._board):
+            return False
+        if col < 0 or col >= len(self._board[line]):
+            return False
+        return self._board[line][col] == 'E'
 
 
 if __name__ == "__main__":
