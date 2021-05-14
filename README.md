@@ -1,5 +1,5 @@
 # Abalone
-Par Thérèse Ntabuhashe et Edgar Antunes
+Par Thérèse Ntabuhashe (195320) et Edgar Antunes (195123)
 
 ### Liste des fonctions utilisés:
 	- client_s() => on crée un socket client qui va essayer de se connecter au server
@@ -21,7 +21,7 @@ Par Thérèse Ntabuhashe et Edgar Antunes
     - from jsonNetwork import sendJSON, receiveJSON
 
 ### Stratégie utilisé
-On a mis tout les pions qu'on pouvait bouger ensemble dans un même dictionnaire donc la clé est la direction du mouvement. Et de là ou choisit lequel va nous permettre de bouger le maximum de pions en même temps. (grâce au fonctions énoncées plus haut). On privilégie le mouvement de plusieurs pions. Et on a décider de na jamais reculer. 
+On a mis tout les pions qu'on pouvait bouger ensemble dans un même dictionnaire donc la clé est la direction du mouvement. Et de là ou choisit lequel va nous permettre de bouger le maximum de pions en même temps. (grâce au fonctions énoncées plus haut). On privilégie le mouvement de plusieurs pions. Et on a décider de ne jamais reculer. 
 
 #### Proximité au centre
 Le but du jeu c'est de pousser les pions ennemies hors du terrain de jeux. L'ennemie devra faire de même, ce qui veut 
