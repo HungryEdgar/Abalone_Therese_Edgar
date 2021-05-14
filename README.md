@@ -1,4 +1,4 @@
-#H1 Abalone
+#Abalone
 Par Thérèse Ntabuhashe et Edgar Antunes
 
 ### Liste des fonctions utilisés:
@@ -17,7 +17,8 @@ Par Thérèse Ntabuhashe et Edgar Antunes
 	- possible_moves() => renvoie des moves en fonction de la couleur des pions
 
 ### Liste des modules utilisés:
-	- socket, from jsonNetwork import sendJSON, receiveJSON
+	- socket 
+    - from jsonNetwork import sendJSON, receiveJSON
 
 ### Stratégie utilisé
 
