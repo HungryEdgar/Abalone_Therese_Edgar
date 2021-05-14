@@ -3,7 +3,6 @@ from jsonNetwork import sendJSON, receiveJSON
 
 '''
     On crée un socket client qui va essayer de se connecter au seveur 
-    (modèle sensé petre statique, il doit donc être en dehors de la class)
 '''
 
 
@@ -112,7 +111,7 @@ class IAClient:
         sendJSON(ia, my_move)
 
     '''
-        Pour abandonner si jamais on ne sait pas quoi faire
+        Pour abandonner si jamais on ne sait pas quoi faire et éviter de faire des bad moves
     '''
     def give_up(self,ia):
         sendJSON(ia, {"response": "giveup",})
@@ -179,7 +178,7 @@ class IAClient:
         return friends
 
     '''
-        Pour avoir les mouvements faisable
+        Pour avoir les mouvements possible
     '''
 
     def get_moves(self, is_black: bool = True):
@@ -219,6 +218,10 @@ class IAClient:
         if self.position_empty(line + 1, col + 1) and not is_black:
             possible_moves['SE'] = [(line, col)]
         return possible_moves
+
+    '''
+        Pour fixier l'endroit où on joue (Ne pas sortir du plateau de jeux)
+    '''
 
     def position_empty(self, line, col):
         if line < 0 or line >= len(self._board):
