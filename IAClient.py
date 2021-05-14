@@ -81,8 +81,9 @@ class IAClient:
             except OSError:
                 pass
 
+
     '''
-        Pour les requêtes fa
+        Pour les requêtes faites au serveur
     '''
 
     def request(self, ia, message):
@@ -90,14 +91,13 @@ class IAClient:
             sendJSON(ia, {"response": "pong"})
 
         if message["request"] == "play":
-            print(message["request"])
             state = message['state']
             board = state['board']
             current = state['current']
             if current == 0:
-                self.move(ia, board)
+                self.move(ia, board, message['lives'])
             else:
-                self.move(ia, board, False)
+                self.move(ia, board,message['lives'] ,False)
 
     '''
         Pour commencer à jouer et récupéré l'état du jeux, j'appelle la class IAStrategy
@@ -112,29 +112,42 @@ class IAClient:
         sendJSON(ia, my_move)
 
     '''
-            On choisit quel move on veut réaliser
-        '''
+        Pour abandonner si jamais on ne sait pas quoi faire
+    '''
+    def give_up(self,ia):
+        sendJSON(ia, {"response": "giveup",})
 
-    def move(self, ia, board, black: bool = True):
-        self._board = board
-        # Those who can be moved classed by direction
-        moves = self.get_moves(black)
-        partners = self.find_partners(moves)
-        count_moves: int = 0
-        to_move = {'direction': None, "marbles": None}
-        for direction, groups in partners.items():
-            for group in groups:
-                print(direction)
-                print(group)
-                if len(group) > count_moves:
-                    count_moves = len(group)
-                    to_move['direction'] = direction
-                    to_move['marbles'] = group
+    '''
+        On choisit quel move on veut réaliser
+    '''
 
-        if to_move['marbles'] and len(to_move['marbles']) > 3:
-            to_move['marbles'] = [to_move['marbles'][idx] for idx in range(0, 2)]
-        self.play(to_move, ia)
-        # TODO Choose which move you have to perform
+    def move(self, ia, board,lives ,black: bool = True):
+        if lives == 3 :
+            self._board = board
+            moves = self.get_moves(black)
+            partners = self.find_partners(moves)
+            count_moves: int = 0
+            to_move = {'direction': None, 'marbles': None}
+            for direction, groups in partners.items():
+                for group in groups:
+                    if len(group) > count_moves:
+                        count_moves = len(group)
+                        to_move['direction'] = direction
+                        to_move['marbles'] = group
+
+            if to_move['marbles'] and len(to_move['marbles']) > 3:
+                to_move['marbles'] = [to_move['marbles'][idx] for idx in range(0, 2)]
+
+            if not to_move['marbles']:
+                self.give_up(ia)
+            else:
+                self.play(to_move, ia)
+        else:
+            self.give_up(ia)
+
+    '''
+        Pour trouver les pions avec lequels je peux me déplacer
+    '''
 
     def find_partners(self, moves):
         partners = {
@@ -165,6 +178,10 @@ class IAClient:
 
         return friends
 
+    '''
+        Pour avoir les mouvements faisable
+    '''
+
     def get_moves(self, is_black: bool = True):
         me = 'B' if is_black else 'W'
         moves = {
@@ -185,6 +202,7 @@ class IAClient:
                         moves[key] += value
 
         return moves
+
 
     def possible_moves(self, line, col, is_black: bool = True):
         possible_moves = {}
@@ -208,6 +226,7 @@ class IAClient:
         if col < 0 or col >= len(self._board[line]):
             return False
         return self._board[line][col] == 'E'
+
 
 
 if __name__ == "__main__":
