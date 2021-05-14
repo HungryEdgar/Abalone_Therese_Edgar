@@ -211,5 +211,5 @@ class IAClient:
 
 
 if __name__ == "__main__":
-    client = IAClient('localhost', 19800)
+    client = IAClient('localhost', 9800)
     client.run()
