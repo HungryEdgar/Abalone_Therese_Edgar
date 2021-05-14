@@ -21,7 +21,7 @@ Par Thérèse Ntabuhashe et Edgar Antunes
     - from jsonNetwork import sendJSON, receiveJSON
 
 ### Stratégie utilisé
-On a mis tout les pions qu'on pouvait bouger enseble dans un même dic. Et de là ou choisis lequel va nous permettre de bouger le maximum de pions en même temps
+On a mis tout les pions qu'on pouvait bouger ensemble dans un même dictionnaire donc la clé est la direction du mouvement. Et de là ou choisit lequel va nous permettre de bouger le maximum de pions en même temps. (grâce au fonctions énoncées plus haut). On privilégie le mouvement de plusieurs pions. Et on a décider de na jamais reculer. 
 
 #### Proximité au centre
 Le but du jeu c'est de pousser les pions ennemies hors du terrain de jeux. L'ennemie devra faire de même, ce qui veut 
