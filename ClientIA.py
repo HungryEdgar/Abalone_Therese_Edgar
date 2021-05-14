@@ -19,7 +19,7 @@ def client_s():
 
 
 class IAClient:
-    def __init__(self, host=socket.gethostname(), port=9000):
+    def __init__(self, host=socket.gethostname(), port=9900):
         self._s = None
         self._host = host
         self._port = port
@@ -45,7 +45,7 @@ class IAClient:
             registration = {
                 "request": "subscribe",
                 "port": self._port,
-                "name": "Hungry ",
+                "name": "Hungry Team",
                 "matricules": ["195320", "195123"]
             }
             sendJSON(ia_socket, registration)
@@ -71,7 +71,7 @@ class IAClient:
         print('Listening on port {}'.format(self._port))
 
     '''
-        Pour attendre que les clients se connecte 
+        Pour attendre que les clients se connecte et les accepter
     '''
 
     def accept(self):
@@ -87,7 +87,7 @@ class IAClient:
                 pass
 
     '''
-        Pour les requêtes faites au serveur
+        Pour les requêtes fa
     '''
 
     def request(self, ia, message):
@@ -143,7 +143,8 @@ class IAClient:
 
         direction = k[v.index(max(v))]
         marbles = moves[str(direction)]
-        self.move(marbles, direction,ia)
+        self.move(marbles,direction,ia)
+
 
     def move_white(self, ia, board):
         self._board = board
@@ -166,23 +167,25 @@ class IAClient:
         direction = k[v.index(max(v))]
         marbles = moves[str(direction)]
 
-        self.move(marbles, direction, ia)
+        self.move(marbles,direction,ia)
 
     '''
         On renvoie le mouvement qu'on envera par la suite
     '''
-
-    def move(self, marbles, direction, ia):
+    def move(self,marbles,direction,ia):
         # Je cherche les poins avec ayant la même ligne et ou la même colone
 
         same_line = []
         same_col = []
         for jj in range(len(marbles) - 1):
             if marbles[jj][0] == marbles[jj + 1][0]:
-                same_line.append(marbles[jj + 1])
+                same_line.append(marbles[jj])
             if marbles[jj][1] == marbles[jj + 1][1]:
                 same_col.append(marbles[jj])
             jj += 1
+
+        print(same_col)
+        print(same_line)
 
         # Je regarde si si sont l'un a coté de l'autre ou pas
 
